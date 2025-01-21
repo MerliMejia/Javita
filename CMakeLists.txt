@@ -11,7 +11,7 @@ add_library(glad STATIC external/glad/src/glad.c)
 target_include_directories(glad PUBLIC external/glad/include)
 
 # Collect all .cpp files in the src directory
-file(GLOB SOURCE_FILES src/*.cpp)
+file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
 
 # Add the executable
 add_executable(Javitas ${SOURCE_FILES})

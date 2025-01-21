@@ -1,7 +1,7 @@
-#include <iostream>
+#include "./engine/core.h"
 
 int main()
 {
-    std::cout << "Hello, World!" << std::endl;
+    Javita::run();
     return 0;
 }

@@ -58,20 +58,17 @@ static void init()
     // Setting up what we're drawing
 
     float vertices[] = {
-        -0.5f,
-        -0.5f,
-        0.0f,
-        0.5f,
-        -0.5f,
-        0.0f,
-        0.0f,
-        0.5f,
-        0.0f};
+        0.5f, 0.5f, 0.0f,   // top right
+        0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        -0.5f, 0.5f, 0.0f   // top left
+    };
 
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+    unsigned int indices[] = {
+        // note that we start from 0!
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
 
     const char *vertexShaderSource = "#version 330 core\n"
                                      "layout (location = 0) in vec3 aPos;\n"
@@ -125,14 +122,27 @@ static void init()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    // VAO
+    // Generate and bind the VAO
     glGenVertexArrays(1, &Javita::VAO);
     glBindVertexArray(Javita::VAO);
+
+    // Generate and bind the VBO, then fill it with the vertices
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Generate and bind the EBO, then fill it with the indices
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // Set the vertex attributes pointers
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // Unbind the VAO
     glBindVertexArray(0);
 }
 
@@ -143,9 +153,9 @@ static void loop(GLFWwindow *window)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(Javita::shaderProgram);
         glBindVertexArray(Javita::VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

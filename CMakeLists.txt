@@ -49,3 +49,15 @@ target_include_directories(Javitas PRIVATE ${IMGUI_DIR} ${IMGUI_BACKENDS})
 
 # Add Dear ImGui sources to the target
 target_sources(Javitas PRIVATE ${IMGUI_SOURCES})
+
+# Add a custom command to copy shader files into the build directory
+add_custom_command(
+    TARGET Javitas
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_SOURCE_DIR}/src/engine/defaultShader.vs
+    ${CMAKE_CURRENT_BINARY_DIR}/defaultShader.vs
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_SOURCE_DIR}/src/engine/defaultShader.fs
+    ${CMAKE_CURRENT_BINARY_DIR}/defaultShader.fs
+)

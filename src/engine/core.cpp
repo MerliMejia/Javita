@@ -6,7 +6,7 @@ namespace Javita
     int SCR_HEIGHT = 600;
     GLFWwindow *window = nullptr;
     unsigned int VAO;
-    unsigned int shaderProgram;
+    Shaders::Shader shader;
 }
 
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -70,57 +70,8 @@ static void init()
         1, 2, 3  // second triangle
     };
 
-    const char *vertexShaderSource = "#version 330 core\n"
-                                     "layout (location = 0) in vec3 aPos;\n"
-                                     "void main()\n"
-                                     "{\n"
-                                     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                                     "}\0";
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-                  << infoLog << std::endl;
-    }
-
-    const char *fragmentShaderSource = "#version 330 core\n"
-                                       "out vec4 FragColor;\n"
-                                       "void main()\n"
-                                       "{\n"
-                                       "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-                                       "}\n\0";
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // Shader Program
-    Javita::shaderProgram = glCreateProgram();
-    glAttachShader(Javita::shaderProgram, vertexShader);
-    glAttachShader(Javita::shaderProgram, fragmentShader);
-    glLinkProgram(Javita::shaderProgram);
-
-    glGetProgramiv(Javita::shaderProgram, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(Javita::shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
-                  << infoLog << std::endl;
-    }
-
-    glUseProgram(Javita::shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    Javita::shader = Javita::Shaders::createShader("defaultShader.vs", "defaultShader.fs");
+    glUseProgram(Javita::shader.shaderProgram);
 
     // Generate and bind the VAO
     glGenVertexArrays(1, &Javita::VAO);
@@ -153,6 +104,7 @@ static void loop(GLFWwindow *window)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glUseProgram(Javita::shader.shaderProgram);
         glBindVertexArray(Javita::VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);

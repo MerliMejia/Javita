@@ -20,7 +20,7 @@ add_executable(Javitas ${SOURCE_FILES})
 target_link_libraries(Javitas PRIVATE glad "-framework OpenGL" glfw)
 
 # Include directories
-target_include_directories(Javitas PRIVATE external/glad/include external/glm)
+target_include_directories(Javitas PRIVATE external/glad/include)
 
 # Add GLFW
 add_subdirectory(external/glfw)

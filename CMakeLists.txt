@@ -17,18 +17,14 @@ file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
 add_executable(Javitas ${SOURCE_FILES})
 
 # Link libraries
-target_link_libraries(Javitas PRIVATE glad "-framework OpenGL" glfw assimp)
+target_link_libraries(Javitas PRIVATE glad "-framework OpenGL" glfw)
 
 # Include directories
-target_include_directories(Javitas PRIVATE external/glad/include external/glm external/assimp/include)
+target_include_directories(Javitas PRIVATE external/glad/include external/glm)
 
 # Add GLFW
 add_subdirectory(external/glfw)
 target_link_libraries(Javitas PRIVATE glfw)
-
-# Add Assimp
-add_subdirectory(external/assimp)
-target_link_libraries(Javitas PRIVATE assimp)
 
 # Add Dear ImGui
 set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)

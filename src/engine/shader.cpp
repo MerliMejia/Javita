@@ -1,15 +1,6 @@
 #include "shader.h"
 
-namespace Javita
-{
-    namespace Shaders
-    {
-        std::string readFileToString(const std::string &filePath);
-    } // namespace Shaders
-
-} // namespace Javita
-
-std::string Javita::Shaders::readFileToString(const std::string &filePath)
+std::string readFileToString(const std::string &filePath)
 {
 
     std::string code;
@@ -36,13 +27,13 @@ std::string Javita::Shaders::readFileToString(const std::string &filePath)
     return code;
 }
 
-Javita::Shaders::Shader Javita::Shaders::createShader(const std::string &vertexPath, const std::string &fragmentPath)
+Shader createShader(const std::string &vertexPath, const std::string &fragmentPath)
 {
-    Shaders::Shader shader;
+    Shader shader;
 
     // Read files into local std::string variables
-    std::string vertexShaderCode = Shaders::readFileToString(vertexPath);
-    std::string fragmentShaderCode = Shaders::readFileToString(fragmentPath);
+    std::string vertexShaderCode = readFileToString(vertexPath);
+    std::string fragmentShaderCode = readFileToString(fragmentPath);
 
     // Get C-style pointers valid for the duration of this function
     const char *vShaderSource = vertexShaderCode.c_str();

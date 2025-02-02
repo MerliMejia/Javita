@@ -6,23 +6,15 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
 
-#include "core.h"
-
-namespace Javita
+struct Shader
 {
-    namespace Shaders
-    {
-        struct Shader
-        {
-            unsigned int vertexShader;
-            unsigned int fragmentShader;
-            unsigned int shaderProgram;
-        };
+    unsigned int vertexShader;
+    unsigned int fragmentShader;
+    unsigned int shaderProgram;
+};
 
-        Shader createShader(const std::string &vertexPath, const std::string &fragmentPath);
-
-    } // namespace Shader
-} // namespace Javita
+Shader createShader(const std::string &vertexPath, const std::string &fragmentPath);
 
 #endif // __SHADER__

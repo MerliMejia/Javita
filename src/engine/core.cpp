@@ -6,7 +6,7 @@ namespace Javita
     int SCR_HEIGHT = 600;
     GLFWwindow *window = nullptr;
     unsigned int VAO;
-    Shaders::Shader shader;
+    Shader shader;
 }
 
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -70,7 +70,7 @@ static void init()
         1, 2, 3  // second triangle
     };
 
-    Javita::shader = Javita::Shaders::createShader("defaultShader.vs", "defaultShader.fs");
+    Javita::shader = createShader("defaultShader.vs", "defaultShader.fs");
     glUseProgram(Javita::shader.shaderProgram);
 
     // Generate and bind the VAO

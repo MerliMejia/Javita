@@ -20,8 +20,6 @@ namespace Javita
             unsigned int shaderProgram;
         };
 
-        std::string readFileToString(const std::string &filePath);
-
         Shader createShader(const std::string &vertexPath, const std::string &fragmentPath);
 
     } // namespace Shader

@@ -1,5 +1,14 @@
 #include "shader.h"
 
+namespace Javita
+{
+    namespace Shaders
+    {
+        std::string readFileToString(const std::string &filePath);
+    } // namespace Shaders
+
+} // namespace Javita
+
 std::string Javita::Shaders::readFileToString(const std::string &filePath)
 {
 

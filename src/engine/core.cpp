@@ -1,13 +1,10 @@
 #include "core.h"
 
-namespace Javita
-{
-    int SCR_WIDTH = 800;
-    int SCR_HEIGHT = 600;
-    GLFWwindow *window = nullptr;
-    unsigned int VAO;
-    Shader shader;
-}
+int SCR_WIDTH = 800;
+int SCR_HEIGHT = 600;
+GLFWwindow *window = nullptr;
+unsigned int VAO;
+Shader shader;
 
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -30,15 +27,15 @@ static void init()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    Javita::window = glfwCreateWindow(Javita::SCR_WIDTH, Javita::SCR_HEIGHT, "Javitas", NULL, NULL);
-    if (Javita::window == NULL)
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Javitas", NULL, NULL);
+    if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return;
     }
 
-    glfwMakeContextCurrent(Javita::window);
+    glfwMakeContextCurrent(window);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -46,8 +43,8 @@ static void init()
         return;
     }
 
-    glViewport(0, 0, Javita::SCR_WIDTH, Javita::SCR_HEIGHT);
-    glfwSetFramebufferSizeCallback(Javita::window, framebuffer_size_callback);
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glDisable(GL_FRAMEBUFFER_SRGB);
 
     glEnable(GL_DEPTH_TEST);
@@ -70,12 +67,12 @@ static void init()
         1, 2, 3  // second triangle
     };
 
-    Javita::shader = createShader("defaultShader.vs", "defaultShader.fs");
-    glUseProgram(Javita::shader.shaderProgram);
+    shader = createShader("defaultShader.vs", "defaultShader.fs");
+    glUseProgram(shader.shaderProgram);
 
     // Generate and bind the VAO
-    glGenVertexArrays(1, &Javita::VAO);
-    glBindVertexArray(Javita::VAO);
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
 
     // Generate and bind the VBO, then fill it with the vertices
     unsigned int VBO;
@@ -104,8 +101,8 @@ static void loop(GLFWwindow *window)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(Javita::shader.shaderProgram);
-        glBindVertexArray(Javita::VAO);
+        glUseProgram(shader.shaderProgram);
+        glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 

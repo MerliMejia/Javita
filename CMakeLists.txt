@@ -46,14 +46,24 @@ target_include_directories(Javitas PRIVATE ${IMGUI_DIR} ${IMGUI_BACKENDS})
 # Add Dear ImGui sources to the target
 target_sources(Javitas PRIVATE ${IMGUI_SOURCES})
 
-# Add a custom command to copy shader files into the build directory
-add_custom_command(
-    TARGET Javitas
-    PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_SOURCE_DIR}/src/engine/defaultShader.vs
-    ${CMAKE_CURRENT_BINARY_DIR}/defaultShader.vs
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_SOURCE_DIR}/src/engine/defaultShader.fs
-    ${CMAKE_CURRENT_BINARY_DIR}/defaultShader.fs
+# Glob all shader files (.fs and .vs) from the engine source directory
+file(GLOB SHADER_FILES
+    "${CMAKE_SOURCE_DIR}/src/engine/*.fs"
+    "${CMAKE_SOURCE_DIR}/src/engine/*.vs"
 )
+
+# Loop over each shader file and add a custom command to copy it to the build directory
+foreach(SHADER IN LISTS SHADER_FILES)
+    # Extract just the filename (e.g., defaultShader.vs)
+    get_filename_component(SHADER_NAME ${SHADER} NAME)
+
+    add_custom_command(
+        TARGET Javitas
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${SHADER}
+        ${CMAKE_CURRENT_BINARY_DIR}/${SHADER_NAME}
+        COMMENT "Copying shader file: ${SHADER_NAME}"
+    )
+endforeach()
+

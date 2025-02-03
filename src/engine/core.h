@@ -6,6 +6,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include <vector>
+
 #include "shader.h"
 
 namespace Javita

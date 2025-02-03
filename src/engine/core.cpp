@@ -3,8 +3,60 @@
 int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
 GLFWwindow *window = nullptr;
-unsigned int VAO;
-Shader shader;
+
+struct Rendeable
+{
+    unsigned int VAO;
+    unsigned int VBO;
+    unsigned int EBO;
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+    Shader shader;
+
+    void init()
+    {
+        shader = createShader("defaultShader.vs", "defaultShader.fs");
+        glUseProgram(shader.shaderProgram);
+
+        // Generate and bind the VAO
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+
+        // Generate and bind the VBO, then fill it with the vertices
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        float *verticesData = vertices.data();
+
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), verticesData, GL_DYNAMIC_DRAW);
+
+        // Generate and bind the EBO, then fill it with the indices
+        glGenBuffers(1, &EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+        unsigned int *indicesData = indices.data();
+
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indicesData, GL_DYNAMIC_DRAW);
+
+        // Set the vertex attributes pointers
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+
+        // Unbind the VAO
+        glBindVertexArray(0);
+    }
+
+    void draw()
+    {
+        glUseProgram(shader.shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    }
+};
+
+std::vector<Rendeable> rendeables;
+
+Rendeable test;
 
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -12,6 +64,7 @@ static void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
+
 static void init()
 
 {
@@ -52,46 +105,25 @@ static void init()
     std::cout << "Javitas initialized successfully!\n\n"
               << std::endl;
 
-    // Setting up what we're drawing
-
-    float vertices[] = {
+    test.vertices = {
         0.5f, 0.5f, 0.0f,   // top right
         0.5f, -0.5f, 0.0f,  // bottom right
         -0.5f, -0.5f, 0.0f, // bottom left
         -0.5f, 0.5f, 0.0f   // top left
     };
 
-    unsigned int indices[] = {
+    test.indices = {
         // note that we start from 0!
         0, 1, 3, // first triangle
         1, 2, 3  // second triangle
     };
 
-    shader = createShader("defaultShader.vs", "defaultShader.fs");
-    glUseProgram(shader.shaderProgram);
+    rendeables.push_back(test);
 
-    // Generate and bind the VAO
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    // Generate and bind the VBO, then fill it with the vertices
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Generate and bind the EBO, then fill it with the indices
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // Set the vertex attributes pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    // Unbind the VAO
-    glBindVertexArray(0);
+    for (auto &rendeable : rendeables)
+    {
+        rendeable.init();
+    }
 }
 
 static void loop(GLFWwindow *window)
@@ -101,10 +133,10 @@ static void loop(GLFWwindow *window)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(shader.shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        for (auto &rendeable : rendeables)
+        {
+            rendeable.draw();
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();

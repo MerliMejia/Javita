@@ -16,6 +16,7 @@ struct Rendeable
     void init()
     {
         shader = createShader("defaultShader.vs", "defaultShader.fs");
+
         glUseProgram(shader.shaderProgram);
 
         // Generate and bind the VAO
@@ -55,8 +56,6 @@ struct Rendeable
 };
 
 std::vector<Rendeable> rendeables;
-
-Rendeable test;
 
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -105,21 +104,6 @@ static void init()
     std::cout << "Javitas initialized successfully!\n\n"
               << std::endl;
 
-    test.vertices = {
-        0.5f, 0.5f, 0.0f,   // top right
-        0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f, // bottom left
-        -0.5f, 0.5f, 0.0f   // top left
-    };
-
-    test.indices = {
-        // note that we start from 0!
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
-
-    rendeables.push_back(test);
-
     for (auto &rendeable : rendeables)
     {
         rendeable.init();
@@ -153,4 +137,17 @@ void Javita::run()
     init();
     loop(window);
     finish();
+}
+
+Javita::RendeableObject Javita::Render::createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices)
+{
+    Rendeable rendeable;
+    rendeable.vertices = vertices;
+    rendeable.indices = indices;
+
+    Javita::RendeableObject rendeableObject(rendeable.vertices, rendeable.indices, rendeable.shader);
+
+    rendeables.push_back(rendeable);
+
+    return rendeableObject;
 }

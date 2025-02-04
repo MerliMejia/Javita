@@ -45,6 +45,7 @@ struct Rendeable
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
     Shader shader;
+    Javita::Transform transform;
 
     void init()
     {
@@ -168,8 +169,9 @@ static void loop(GLFWwindow *window)
             glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
             // (Optional) Create a model matrix if you need one, e.g. identity matrix:
-            glm::mat4 model = glm::mat4(1.0f);
             unsigned int modelLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "model");
+            rendeable.transform.rotation.y += 1.0f;
+            glm::mat4 model = rendeable.transform.getModelMatrix();
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
             rendeable.draw();
         }
@@ -196,8 +198,9 @@ Javita::RendeableObject Javita::Render::createRendeableObject(std::vector<float>
     Rendeable rendeable;
     rendeable.vertices = vertices;
     rendeable.indices = indices;
+    rendeable.transform = Javita::Transform();
 
-    Javita::RendeableObject rendeableObject(rendeable.vertices, rendeable.indices, rendeable.shader);
+    Javita::RendeableObject rendeableObject(rendeable.vertices, rendeable.indices, rendeable.shader, rendeable.transform);
 
     rendeables.push_back(rendeable);
 

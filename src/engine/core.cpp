@@ -90,6 +90,7 @@ struct Rendeable
 };
 
 std::vector<Rendeable> rendeables;
+std::vector<std::function<void(float)>> updateCallbacks;
 
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -150,6 +151,11 @@ static void loop(GLFWwindow *window)
     {
         processInput(window);
 
+        for (auto &callback : updateCallbacks)
+        {
+            callback(deltaTime);
+        }
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -170,7 +176,6 @@ static void loop(GLFWwindow *window)
 
             // (Optional) Create a model matrix if you need one, e.g. identity matrix:
             unsigned int modelLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "model");
-            rendeable.transform.rotation.y += 1.0f;
             glm::mat4 model = rendeable.transform.getModelMatrix();
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
             rendeable.draw();
@@ -200,9 +205,11 @@ Javita::RendeableObject Javita::Render::createRendeableObject(std::vector<float>
     rendeable.indices = indices;
     rendeable.transform = Javita::Transform();
 
-    Javita::RendeableObject rendeableObject(rendeable.vertices, rendeable.indices, rendeable.shader, rendeable.transform);
-
     rendeables.push_back(rendeable);
+
+    Rendeable &pushedCopy = rendeables[rendeables.size() - 1];
+
+    Javita::RendeableObject rendeableObject(pushedCopy.vertices, pushedCopy.indices, pushedCopy.shader, pushedCopy.transform);
 
     return rendeableObject;
 }
@@ -237,4 +244,9 @@ Javita::RendeableObject Javita::Render::Primitives::createQuad()
     };
 
     return createRendeableObject(vertices, indices);
+}
+
+void Javita::addOnUpdateCallback(std::function<void(float)> callback)
+{
+    updateCallbacks.push_back(callback);
 }

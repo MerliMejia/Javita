@@ -14,22 +14,17 @@ float lastFrame = 0.0f;
 
 void processInput(GLFWwindow *window)
 {
-    // Calculate deltaTime for smooth movement
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
-    // Camera movement speed (units per second)
     float cameraSpeed = 2.5f * deltaTime;
 
-    // Move forward (W) and backward (S)
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         cameraPos -= cameraSpeed * cameraFront;
 
-    // Move left (A) and right (D)
-    // Compute the right vector via cross product
     glm::vec3 cameraRight = glm::normalize(glm::cross(cameraFront, cameraUp));
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         cameraPos -= glm::normalize(cameraRight) * cameraSpeed;
@@ -53,11 +48,9 @@ struct Rendeable
 
         glUseProgram(shader.shaderProgram);
 
-        // Generate and bind the VAO
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
 
-        // Generate and bind the VBO, then fill it with the vertices
         glGenBuffers(1, &VBO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
@@ -65,7 +58,6 @@ struct Rendeable
 
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), verticesData, GL_DYNAMIC_DRAW);
 
-        // Generate and bind the EBO, then fill it with the indices
         glGenBuffers(1, &EBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
@@ -73,11 +65,9 @@ struct Rendeable
 
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indicesData, GL_DYNAMIC_DRAW);
 
-        // Set the vertex attributes pointers
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(0);
 
-        // Unbind the VAO
         glBindVertexArray(0);
     }
 
@@ -89,7 +79,7 @@ struct Rendeable
     }
 };
 
-std::vector<Rendeable> rendeables;
+std::deque<Rendeable> rendeables;
 std::vector<std::function<void(float)>> updateCallbacks;
 
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -159,22 +149,18 @@ static void loop(GLFWwindow *window)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Create view matrix (camera transformation)
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        // Create projection matrix (perspective projection)
         glm::mat4 projection = glm::perspective(glm::radians(45.0f),
                                                 (float)SCR_WIDTH / (float)SCR_HEIGHT,
                                                 0.1f, 100.0f);
 
         for (auto &rendeable : rendeables)
         {
-            // Pass matrices to the shader
             unsigned int viewLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "view");
             unsigned int projLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "projection");
             glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-            // (Optional) Create a model matrix if you need one, e.g. identity matrix:
             unsigned int modelLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "model");
             glm::mat4 model = rendeable.transform.getModelMatrix();
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -200,18 +186,16 @@ void Javita::run()
 
 Javita::RendeableObject Javita::Render::createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices)
 {
-    Rendeable rendeable;
-    rendeable.vertices = vertices;
-    rendeable.indices = indices;
-    rendeable.transform = Javita::Transform();
+    Rendeable newRendeable;
+    newRendeable.vertices = std::move(vertices);
+    newRendeable.indices = std::move(indices);
+    newRendeable.transform = Javita::Transform();
 
-    rendeables.push_back(rendeable);
+    rendeables.push_back(newRendeable);
+    Rendeable &last = rendeables.back();
 
-    Rendeable &pushedCopy = rendeables[rendeables.size() - 1];
-
-    Javita::RendeableObject rendeableObject(pushedCopy.vertices, pushedCopy.indices, pushedCopy.shader, pushedCopy.transform);
-
-    return rendeableObject;
+    RendeableObject ro(last.vertices, last.indices, last.shader, last.transform);
+    return ro;
 }
 
 Javita::RendeableObject Javita::Render::Primitives::createTriangle()

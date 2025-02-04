@@ -27,6 +27,13 @@ namespace Javita
     namespace Render
     {
         Javita::RendeableObject createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices);
+
+        namespace Primitives
+        {
+            Javita::RendeableObject createTriangle();
+            Javita::RendeableObject createQuad();
+        } // namespace Primitives
+
     } // namespace Render
 
 } // namespace Javita

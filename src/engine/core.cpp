@@ -151,3 +151,35 @@ Javita::RendeableObject Javita::Render::createRendeableObject(std::vector<float>
 
     return rendeableObject;
 }
+
+Javita::RendeableObject Javita::Render::Primitives::createTriangle()
+{
+    std::vector<float> vertices = {
+        0.5f, 0.5f, 0.0f,   // top right
+        0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+    };
+
+    std::vector<unsigned int> indices = {
+        0, 1, 2 // triangle
+    };
+
+    return createRendeableObject(vertices, indices);
+}
+
+Javita::RendeableObject Javita::Render::Primitives::createQuad()
+{
+    std::vector<float> vertices = {
+        0.5f, 0.5f, 0.0f,   // top right
+        0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        -0.5f, 0.5f, 0.0f   // top left
+    };
+
+    std::vector<unsigned int> indices = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
+
+    return createRendeableObject(vertices, indices);
+}

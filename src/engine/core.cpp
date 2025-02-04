@@ -4,6 +4,39 @@ int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
 GLFWwindow *window = nullptr;
 
+// Camera stuff.
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+void processInput(GLFWwindow *window)
+{
+    // Calculate deltaTime for smooth movement
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+
+    // Camera movement speed (units per second)
+    float cameraSpeed = 2.5f * deltaTime;
+
+    // Move forward (W) and backward (S)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+
+    // Move left (A) and right (D)
+    // Compute the right vector via cross product
+    glm::vec3 cameraRight = glm::normalize(glm::cross(cameraFront, cameraUp));
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(cameraRight) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(cameraRight) * cameraSpeed;
+}
+
 struct Rendeable
 {
     unsigned int VAO;
@@ -114,11 +147,30 @@ static void loop(GLFWwindow *window)
 {
     while (!glfwWindowShouldClose(window))
     {
+        processInput(window);
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Create view matrix (camera transformation)
+        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        // Create projection matrix (perspective projection)
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f),
+                                                (float)SCR_WIDTH / (float)SCR_HEIGHT,
+                                                0.1f, 100.0f);
+
         for (auto &rendeable : rendeables)
         {
+            // Pass matrices to the shader
+            unsigned int viewLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "view");
+            unsigned int projLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "projection");
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+            // (Optional) Create a model matrix if you need one, e.g. identity matrix:
+            glm::mat4 model = glm::mat4(1.0f);
+            unsigned int modelLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
             rendeable.draw();
         }
 

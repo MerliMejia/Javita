@@ -42,14 +42,17 @@ namespace Javita
         std::vector<unsigned int> &indices;
         Shader &shader;
         Transform &transform;
+        glm::vec3 &color;
 
         RendeableObject(std::vector<float> &vertices, std::vector<unsigned int> &indices, Shader &shader,
-                        Transform &transform) : vertices(vertices), indices(indices), shader(shader), transform(transform) {}
+                        Transform &transform, glm::vec3 &color) : vertices(vertices), indices(indices),
+                                                                  shader(shader), transform(transform), color(color) {}
     };
 
     namespace Render
     {
         Javita::RendeableObject createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices);
+        Javita::RendeableObject createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices, glm::vec3 color);
 
         namespace Primitives
         {

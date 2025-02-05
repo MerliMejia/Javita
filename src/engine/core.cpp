@@ -41,6 +41,7 @@ struct Rendeable
     std::vector<unsigned int> indices;
     Shader shader;
     Javita::Transform transform;
+    glm::vec3 color = glm::vec3(1.0f, 0.5f, 0.2f);
 
     void init()
     {
@@ -54,9 +55,25 @@ struct Rendeable
         glGenBuffers(1, &VBO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-        float *verticesData = vertices.data();
+        std::vector<float> transformedVertices;
+        transformedVertices.reserve(vertices.size() + (vertices.size() / 3 * 3)); // Reserve space for efficiency
 
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), verticesData, GL_DYNAMIC_DRAW);
+        for (size_t i = 0; i < vertices.size(); i += 3)
+        {
+            // Copy position
+            transformedVertices.push_back(vertices[i]);
+            transformedVertices.push_back(vertices[i + 1]);
+            transformedVertices.push_back(vertices[i + 2]);
+
+            // Append color values
+            transformedVertices.push_back(color.r);
+            transformedVertices.push_back(color.g);
+            transformedVertices.push_back(color.b);
+        }
+
+        float *verticesData = transformedVertices.data();
+
+        glBufferData(GL_ARRAY_BUFFER, transformedVertices.size() * sizeof(float), verticesData, GL_DYNAMIC_DRAW);
 
         glGenBuffers(1, &EBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -65,8 +82,11 @@ struct Rendeable
 
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indicesData, GL_DYNAMIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
 
         glBindVertexArray(0);
     }
@@ -194,7 +214,22 @@ Javita::RendeableObject Javita::Render::createRendeableObject(std::vector<float>
     rendeables.push_back(newRendeable);
     Rendeable &last = rendeables.back();
 
-    RendeableObject ro(last.vertices, last.indices, last.shader, last.transform);
+    RendeableObject ro(last.vertices, last.indices, last.shader, last.transform, last.color);
+    return ro;
+}
+
+Javita::RendeableObject Javita::Render::createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices, glm::vec3 color)
+{
+    Rendeable newRendeable;
+    newRendeable.vertices = std::move(vertices);
+    newRendeable.indices = std::move(indices);
+    newRendeable.transform = Javita::Transform();
+    newRendeable.color = color;
+
+    rendeables.push_back(newRendeable);
+    Rendeable &last = rendeables.back();
+
+    RendeableObject ro(last.vertices, last.indices, last.shader, last.transform, last.color);
     return ro;
 }
 

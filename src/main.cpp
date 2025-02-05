@@ -13,10 +13,16 @@ int main()
   quad->transform.position = glm::vec3(0.0f, 1.0f, 0.0f);
   quad2->transform.position = glm::vec3(0.0f, -1.0f, 0.0f);
 
+  std::vector<glm::vec3> points = {triangle->transform.position, triangle2->transform.position,
+                                   quad->transform.position, quad2->transform.position};
+
+  Javita::Rendeable *line = Javita::Render::Primitives::createLine(points);
+
   triangle->color = glm::vec3(1.0f, 0.0f, 0.0f);
   triangle2->color = glm::vec3(0.0f, 1.0f, 0.0f);
   quad->color = glm::vec3(0.0f, 0.0f, 1.0f);
   quad2->color = glm::vec3(1.0f, 1.0f, 0.0f);
+  line->color = glm::vec3(1.0f, 1.0f, 1.0f);
 
   Javita::addOnUpdateCallback([triangle, triangle2, quad, quad2](float deltaTime)
                               { triangle->transform.rotation.x += 100.0f * deltaTime;

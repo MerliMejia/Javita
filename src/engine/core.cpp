@@ -204,6 +204,30 @@ Javita::Rendeable *Javita::Render::Primitives::createQuad()
     return createRendeableObject(vertices, indices);
 }
 
+Javita::Rendeable *Javita::Render::Primitives::createLine(std::vector<glm::vec3> points)
+{
+    std::vector<float> vertices;
+
+    for (auto &point : points)
+    {
+        vertices.push_back(point.x);
+        vertices.push_back(point.y);
+        vertices.push_back(point.z);
+    }
+
+    std::vector<unsigned int> indices;
+
+    for (int i = 0; i < points.size(); i++)
+    {
+        indices.push_back(i);
+    }
+
+    Rendeable *rendeable = createRendeableObject(vertices, indices);
+    rendeable->renderMode = RenderMode::LINES;
+
+    return rendeable;
+}
+
 void Javita::addOnUpdateCallback(std::function<void(float)> callback)
 {
     updateCallbacks.push_back(callback);

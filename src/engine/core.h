@@ -36,6 +36,12 @@ namespace Javita
         }
     };
 
+    enum class RenderMode
+    {
+        TRIANGLES,
+        LINES
+    };
+
     struct Rendeable
     {
         unsigned int VAO;
@@ -46,13 +52,21 @@ namespace Javita
         Shader shader;
         Javita::Transform transform = Javita::Transform();
         glm::vec3 color = glm::vec3(1.0f, 0.5f, 0.2f);
+        RenderMode renderMode = RenderMode::TRIANGLES;
 
         void init();
 
         void draw()
         {
             glBindVertexArray(VAO);
-            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+            if (renderMode == Javita::RenderMode::TRIANGLES)
+            {
+                glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+            }
+            else
+            {
+                glDrawElements(GL_LINE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
+            }
         }
     };
 
@@ -65,6 +79,7 @@ namespace Javita
         {
             Rendeable *createTriangle();
             Rendeable *createQuad();
+            Rendeable *createLine(std::vector<glm::vec3> points);
         } // namespace Primitives
 
     } // namespace Render

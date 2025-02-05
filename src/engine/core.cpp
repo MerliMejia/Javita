@@ -208,3 +208,53 @@ void Javita::addOnUpdateCallback(std::function<void(float)> callback)
 {
     updateCallbacks.push_back(callback);
 }
+
+void Javita::Rendeable::init()
+{
+    {
+        shader = createShader("defaultShader.vs", "defaultShader.fs");
+
+        glUseProgram(shader.shaderProgram);
+
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        std::vector<float> transformedVertices;
+        transformedVertices.reserve(vertices.size() + (vertices.size() / 3 * 3)); // Reserve space for efficiency
+
+        for (size_t i = 0; i < vertices.size(); i += 3)
+        {
+            // Copy position
+            transformedVertices.push_back(vertices[i]);
+            transformedVertices.push_back(vertices[i + 1]);
+            transformedVertices.push_back(vertices[i + 2]);
+
+            // Append color values
+            transformedVertices.push_back(color.r);
+            transformedVertices.push_back(color.g);
+            transformedVertices.push_back(color.b);
+        }
+
+        float *verticesData = transformedVertices.data();
+
+        glBufferData(GL_ARRAY_BUFFER, transformedVertices.size() * sizeof(float), verticesData, GL_DYNAMIC_DRAW);
+
+        glGenBuffers(1, &EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+        unsigned int *indicesData = indices.data();
+
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indicesData, GL_DYNAMIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        glBindVertexArray(0);
+    }
+}

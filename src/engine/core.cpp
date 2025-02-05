@@ -32,74 +32,8 @@ void processInput(GLFWwindow *window)
         cameraPos += glm::normalize(cameraRight) * cameraSpeed;
 }
 
-struct Rendeable
-{
-    unsigned int VAO;
-    unsigned int VBO;
-    unsigned int EBO;
-    std::vector<float> vertices;
-    std::vector<unsigned int> indices;
-    Shader shader;
-    Javita::Transform transform;
-    glm::vec3 color = glm::vec3(1.0f, 0.5f, 0.2f);
-
-    void init()
-    {
-        shader = createShader("defaultShader.vs", "defaultShader.fs");
-
-        glUseProgram(shader.shaderProgram);
-
-        glGenVertexArrays(1, &VAO);
-        glBindVertexArray(VAO);
-
-        glGenBuffers(1, &VBO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-        std::vector<float> transformedVertices;
-        transformedVertices.reserve(vertices.size() + (vertices.size() / 3 * 3)); // Reserve space for efficiency
-
-        for (size_t i = 0; i < vertices.size(); i += 3)
-        {
-            // Copy position
-            transformedVertices.push_back(vertices[i]);
-            transformedVertices.push_back(vertices[i + 1]);
-            transformedVertices.push_back(vertices[i + 2]);
-
-            // Append color values
-            transformedVertices.push_back(color.r);
-            transformedVertices.push_back(color.g);
-            transformedVertices.push_back(color.b);
-        }
-
-        float *verticesData = transformedVertices.data();
-
-        glBufferData(GL_ARRAY_BUFFER, transformedVertices.size() * sizeof(float), verticesData, GL_DYNAMIC_DRAW);
-
-        glGenBuffers(1, &EBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-        unsigned int *indicesData = indices.data();
-
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indicesData, GL_DYNAMIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
-        glEnableVertexAttribArray(0);
-
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-
-        glBindVertexArray(0);
-    }
-
-    void draw()
-    {
-        glUseProgram(shader.shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-    }
-};
-
-std::deque<Rendeable> rendeables;
+Javita::Rendeable rendeables[100];
+int rendeablesCount = 0;
 std::vector<std::function<void(float)>> updateCallbacks;
 
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -149,9 +83,9 @@ static void init()
     std::cout << "Javitas initialized successfully!\n\n"
               << std::endl;
 
-    for (auto &rendeable : rendeables)
+    for (int i = 0; i < rendeablesCount; i++)
     {
-        rendeable.init();
+        rendeables[i].init();
     }
 }
 
@@ -174,17 +108,19 @@ static void loop(GLFWwindow *window)
                                                 (float)SCR_WIDTH / (float)SCR_HEIGHT,
                                                 0.1f, 100.0f);
 
-        for (auto &rendeable : rendeables)
+        for (int i = 0; i < rendeablesCount; i++)
         {
-            unsigned int viewLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "view");
-            unsigned int projLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "projection");
+            glUseProgram(rendeables[i].shader.shaderProgram);
+
+            unsigned int viewLoc = glGetUniformLocation(rendeables[i].shader.shaderProgram, "view");
+            unsigned int projLoc = glGetUniformLocation(rendeables[i].shader.shaderProgram, "projection");
             glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-            unsigned int modelLoc = glGetUniformLocation(rendeable.shader.shaderProgram, "model");
-            glm::mat4 model = rendeable.transform.getModelMatrix();
+            unsigned int modelLoc = glGetUniformLocation(rendeables[i].shader.shaderProgram, "model");
+            glm::mat4 model = rendeables[i].transform.getModelMatrix();
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-            rendeable.draw();
+            rendeables[i].draw();
         }
 
         glfwSwapBuffers(window);
@@ -204,36 +140,39 @@ void Javita::run()
     finish();
 }
 
-Javita::RendeableObject Javita::Render::createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices)
+Javita::Rendeable *Javita::Render::createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices)
 {
     Rendeable newRendeable;
     newRendeable.vertices = std::move(vertices);
     newRendeable.indices = std::move(indices);
     newRendeable.transform = Javita::Transform();
 
-    rendeables.push_back(newRendeable);
-    Rendeable &last = rendeables.back();
+    rendeables[rendeablesCount] = newRendeable;
 
-    RendeableObject ro(last.vertices, last.indices, last.shader, last.transform, last.color);
-    return ro;
+    Rendeable *last = &rendeables[rendeablesCount];
+
+    rendeablesCount++;
+
+    return last;
 }
 
-Javita::RendeableObject Javita::Render::createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices, glm::vec3 color)
+Javita::Rendeable *Javita::Render::createRendeableObject(std::vector<float> vertices, std::vector<unsigned int> indices, glm::vec3 color)
 {
     Rendeable newRendeable;
     newRendeable.vertices = std::move(vertices);
     newRendeable.indices = std::move(indices);
-    newRendeable.transform = Javita::Transform();
     newRendeable.color = color;
 
-    rendeables.push_back(newRendeable);
-    Rendeable &last = rendeables.back();
+    rendeables[rendeablesCount] = newRendeable;
 
-    RendeableObject ro(last.vertices, last.indices, last.shader, last.transform, last.color);
-    return ro;
+    Rendeable *last = &rendeables[rendeablesCount];
+
+    rendeablesCount++;
+
+    return last;
 }
 
-Javita::RendeableObject Javita::Render::Primitives::createTriangle()
+Javita::Rendeable *Javita::Render::Primitives::createTriangle()
 {
     std::vector<float> vertices = {
         0.5f, 0.5f, 0.0f,   // top right
@@ -248,7 +187,7 @@ Javita::RendeableObject Javita::Render::Primitives::createTriangle()
     return createRendeableObject(vertices, indices);
 }
 
-Javita::RendeableObject Javita::Render::Primitives::createQuad()
+Javita::Rendeable *Javita::Render::Primitives::createQuad()
 {
     std::vector<float> vertices = {
         0.5f, 0.5f, 0.0f,   // top right

@@ -1,4 +1,5 @@
 #include "../engine/core.h"
+#include "primitives.h"
 
 namespace PrimitivesExample
 {

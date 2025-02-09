@@ -1,4 +1,4 @@
-#include "./examples/primitives.cpp"
+#include "./examples/primitives.h"
 
 int main()
 {

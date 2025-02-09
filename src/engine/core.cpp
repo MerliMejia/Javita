@@ -35,6 +35,7 @@ void processInput(GLFWwindow *window)
 Javita::Rendeable rendeables[100];
 int rendeablesCount = 0;
 std::vector<std::function<void(float)>> updateCallbacks;
+std::vector<std::function<void()>> guiCallbacks;
 
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 
@@ -80,6 +81,16 @@ static void init()
 
     glEnable(GL_DEPTH_TEST);
 
+    // Initialize ImGui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    // Initialize ImGui backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+
     std::cout << "Javitas initialized successfully!\n\n"
               << std::endl;
 
@@ -99,6 +110,19 @@ static void loop(GLFWwindow *window)
         {
             callback(deltaTime);
         }
+
+        // Start ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        for (auto &callback : guiCallbacks)
+        {
+            callback();
+        }
+
+        // Render ImGui
+        ImGui::Render();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -123,6 +147,8 @@ static void loop(GLFWwindow *window)
             rendeables[i].draw();
         }
 
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -130,6 +156,9 @@ static void loop(GLFWwindow *window)
 
 void Javita::finish()
 {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
 }
 
@@ -269,6 +298,11 @@ Javita::Rendeable *Javita::Render::Primitives::createLine(std::vector<glm::vec3>
 void Javita::addOnUpdateCallback(std::function<void(float)> callback)
 {
     updateCallbacks.push_back(callback);
+}
+
+void Javita::addGuiCallback(std::function<void()> callback)
+{
+    guiCallbacks.push_back(callback);
 }
 
 void Javita::Rendeable::init()

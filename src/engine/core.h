@@ -7,6 +7,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 
 #include <vector>
 #include <deque>
@@ -18,6 +21,7 @@ namespace Javita
     void run();
     void finish();
     void addOnUpdateCallback(std::function<void(float)>);
+    void addGuiCallback(std::function<void()>);
     struct Transform
     {
         glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);

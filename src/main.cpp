@@ -1,7 +1,7 @@
-#include "./examples/primitives.h"
+#include "./apps/builder/core.h"
 
 int main()
 {
-  PrimitivesExample::run();
+  Builder::run();
   return 0;
 }

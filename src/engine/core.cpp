@@ -4,6 +4,9 @@ int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
 GLFWwindow *window = nullptr;
 
+glm::vec3 Javita::Utils::cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 Javita::Utils::forward = glm::vec3(0.0f, 0.0f, -1.0f);
+
 // Camera stuff.
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -116,7 +119,7 @@ static void init()
 
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -173,6 +176,8 @@ static void loop(GLFWwindow *window)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        Javita::Utils::forward = glm::normalize(glm::vec3(view[2]));
+        Javita::Utils::cameraPos = cameraPos;
         glm::mat4 projection = glm::perspective(glm::radians(fov),
                                                 (float)SCR_WIDTH / (float)SCR_HEIGHT,
                                                 0.1f, 100.0f);

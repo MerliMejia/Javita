@@ -91,6 +91,12 @@ namespace Javita
 
     } // namespace Render
 
+    namespace Utils
+    {
+        extern glm::vec3 forward;
+        extern glm::vec3 cameraPos;
+    } // namespace Utils
+
 } // namespace Javita
 
 #endif // __CORE_H__

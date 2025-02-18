@@ -83,6 +83,7 @@ namespace Javita
         namespace Primitives
         {
             Rendeable *createLine(std::vector<glm::vec3> points);
+            void updateLine(Rendeable *line, std::vector<glm::vec3> points);
             Rendeable *createTriangle();
             Rendeable *createQuad();
             Rendeable *createCube();

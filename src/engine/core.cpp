@@ -340,6 +340,55 @@ Javita::Rendeable *Javita::Render::Primitives::createLine(std::vector<glm::vec3>
     return rendeable;
 }
 
+void Javita::Render::Primitives::updateLine(Rendeable *line, std::vector<glm::vec3> points)
+{
+    std::vector<float> transformedVertices;
+    transformedVertices.reserve(points.size() * 6);
+
+    for (const auto &point : points)
+    {
+        transformedVertices.push_back(point.x);
+        transformedVertices.push_back(point.y);
+        transformedVertices.push_back(point.z);
+
+        transformedVertices.push_back(line->color.r);
+        transformedVertices.push_back(line->color.g);
+        transformedVertices.push_back(line->color.b);
+    }
+
+    std::vector<unsigned int> indices(points.size());
+    for (size_t i = 0; i < points.size(); i++)
+    {
+        indices[i] = i;
+    }
+
+    line->vertices = transformedVertices;
+
+    glUseProgram(line->shader.shaderProgram);
+
+    glBindBuffer(GL_ARRAY_BUFFER, line->VBO);
+    if (transformedVertices.size() * sizeof(float) > line->vertices.size() * sizeof(float))
+    {
+        glBufferData(GL_ARRAY_BUFFER, transformedVertices.size() * sizeof(float), transformedVertices.data(), GL_DYNAMIC_DRAW);
+    }
+    else
+    {
+        glBufferSubData(GL_ARRAY_BUFFER, 0, transformedVertices.size() * sizeof(float), transformedVertices.data());
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, line->EBO);
+    if (indices.size() * sizeof(unsigned int) > line->indices.size() * sizeof(unsigned int))
+    {
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_DYNAMIC_DRAW);
+    }
+    else
+    {
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(unsigned int), indices.data());
+    }
+
+    line->indices = indices;
+}
+
 void Javita::addOnUpdateCallback(std::function<void(float)> callback)
 {
     updateCallbacks.push_back(callback);
